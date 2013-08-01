@@ -38,12 +38,12 @@ if __name__ == "__main__":
 			for rating in ratings:
 				#Basically, skip first four junk lines
 				if not (j < 5):
-					#Now let's strip out all the remaining HTML tags and the stupid dashes
+					#Now let's strip out all the remaining HTML tags and the stupid dashes...and replace &amp;....
 					rating = re.sub(r'\<[^\>]*\>', '', rating)
 					rating = re.sub(r'\-\s*L?', '', rating, re.I)
-					rating = re.sub(r'\&amp;', '&', rating)																												#where is my CSC401 work?
+					rating = re.sub(r'\&amp;', '&', rating)													#where is my CSC401 work?
 					output += rating + "\t"
-					if (k < 5):			#While we haven't completed a string, concantenate it
+					if (k < 5):		#While we haven't completed a string, concantenate it
 						k = k + 1
 					elif (k == 5):		#Else print it out and reset
 						k = 1
@@ -53,9 +53,7 @@ if __name__ == "__main__":
 				else:
 					j = j + 1
 			
-			
-			#we need to strip first 4 lines, and then remove html
-			
+		#Just read 1st page for the moment
 		if (i == 0):
 			flag = 1
 			
