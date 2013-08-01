@@ -1,4 +1,8 @@
-Ideally
+Todo:
+	add command line args
+	check iff date is valid
+	cycle through pagination
+	testing?
 
 python <search query> <stop date>
 
@@ -21,3 +25,8 @@ Creation:
 
 	
 	Then just use grep to pull relevant rows?
+	
+Questions:
+	How to disambiguate search results?
+		title is "Nothing found..." after exceeding results.
+		So, we can just do while !found and & maybe look @ headers?
