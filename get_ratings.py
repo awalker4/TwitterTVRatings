@@ -31,13 +31,13 @@ def handle_args():
 def format_site_date(my_time, day_of_week):
 	my_time = re.sub('([0-9]+)[a-zA-Z]+', '\\1', my_time)		#Strip any character after the date, ie July 1st => July 1
 	my_time_struct = time.strptime(my_time, "%B %d, %Y")		#Create a struct of the requisite files [tm_wday contains DOW, and tm_yday contains position in year]
-	query_time = time.strptime(day_of_week, "%A")				#Sunday is being parsed as 6th day of the week, specs say it should be 0....
+	query_time = time.strptime(day_of_week, "%A")			#Sunday is being parsed as 6th day of the week, specs say it should be 0....
 	if not(query_time.tm_wday == my_time_struct.tm_wday):
-		diff = my_time_struct.tm_wday + 1
+		diff = ((my_time_struct.tm_wday +1) %7) - ((query_time.tm_wday +1) %7)
 		print diff
 		print query_time, query_time.tm_wday
 		print my_time_struct, my_time_struct.tm_wday
-		try:													#Try just naively subtracting the time difference
+		try:								#Try just naively subtracting the time difference
 			my_time_struct = time.strptime(str(my_time_struct.tm_yday - diff) + " " + str(my_time_struct.tm_year), "%j %Y")
 		except:
 			#This is still borked
@@ -45,14 +45,17 @@ def format_site_date(my_time, day_of_week):
 			#
 			print my_time_struct.tm_yday, diff, str(my_time_struct.tm_yday - diff)
 			my_time_struct = time.strptime(str(my_time_struct.tm_yday - diff) + " " + str(my_time_struct.tm_year - 1), "%j %Y")		
+			
 	display_time = time.strftime("%m/%d/%Y", my_time_struct)	#Format it back to MM/DD/YYYY
+	#print display_time
 	return display_time, my_time_struct
 	
 	
 if __name__ == "__main__":
 	dow, query, formatted_query, stop_date = handle_args()
-	#date = "July 31rd, 2013"
-
+	#date = "July 2rd, 2013"
+	#display_date, date_struct = format_site_date(date, dow)
+	#exit(1)
 	while (not flag):
 		response = urllib2.urlopen(base_url + str(page) + junk + formatted_query).read().decode('utf-8')
 		
