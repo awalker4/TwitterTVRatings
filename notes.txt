@@ -1,17 +1,21 @@
 Todo:
 	add command line args
+		Handle all command line args
+		Format end_date
 	check iff date is valid
+		and if query_date is valid.  Handle iff year rolls over
 	cycle through pagination
+		compare to end date
 	testing?
 
-python <search query> <stop date>
+python <day of week> <opt> <stop date>
 
 	WHERE
 		search query is a day of the week?
 			--> strings like "sunday cable ratings" are useful
 				So, we need to distinguish between the streams as well; ie network vs cable
 	
-		stop_date is a fixed date?
+		stop_date is a fixed date? => Month atm
 	
 Output:
 AIR_DATE ... Show	Net	Time	Viewership (million, Live+SD)	Adults 18-49 rating (Live+SD)
