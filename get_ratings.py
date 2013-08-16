@@ -9,62 +9,78 @@ flag = 0
 base_url = "http://tvbythenumbers.zap2it.com/page/"
 page = 1
 junk = "/?s="
-i = 0 
-
 
 #Handles the command line arguments and returns them in a useful format
 def handle_args():
 	if (len(sys.argv) < 2):
-		print "Usage... getratings.py DAY_OF_WEEK <opt> STOP_DATE (MM/DD/YY)"
+		print "Usage... getratings.py DAY_OF_WEEK <opt> STOP_DATE (MM/DD/YYYY)"
 		exit(1)
 	else:
 		dow = sys.argv[1]
 		query = sys.argv[1] + " cable ratings"
 		formatted_query = re.sub(r'\s+', '+', query)		
-		stop_date = ""
+		stop_date = 1
+		
+		if (len(sys.argv) == 3):
+			try:
+				stop_date = time.strptime(sys.argv[2], "%m/%d/%Y")
+			except:
+				print "Please supply the date in the format MM/DD/YYYY..."
+				exit(1)
+		else:
+			stop_date = time.strptime('1/1/1900', "%m/%d/%Y")
+			
 		return dow, query, formatted_query, stop_date
 
 		
 #Takes a date of the form July 31st, 2001 (as supplied by tvbtn) and converts it to the form 07/31/2001
 #We "presume" that if the query was for "Sunday" that the implied Sunday will be the first occurrence before my_time
 #Also returns a struct so that we can compare dates for termination		
-def format_site_date(my_time, day_of_week):
-	my_time = re.sub('([0-9]+)[a-zA-Z]+', '\\1', my_time)		#Strip any character after the date, ie July 1st => July 1
-	my_time_struct = time.strptime(my_time, "%B %d, %Y")		#Create a struct of the requisite files [tm_wday contains DOW, and tm_yday contains position in year]
+def format_site_date(posting_time, day_of_week):
+	posting_time = re.sub('([0-9]+)[a-zA-Z]+', '\\1', posting_time)		#Strip any character after the date, ie July 1st => July 1
+	posting_struct = time.strptime(posting_time, "%B %d, %Y")		#Create a struct of the requisite files [tm_wday contains DOW, and tm_yday contains position in year]
 	query_time = time.strptime(day_of_week, "%A")				#Sunday is being parsed as 6th day of the week, specs say it should be 0....
-	if not(query_time.tm_wday == my_time_struct.tm_wday):
-		diff = (my_time_struct.tm_wday - query_time.tm_wday) % 7
-		#print diff
-		#print query_time, query_time.tm_wday
-		#print my_time_struct, my_time_struct.tm_wday
+	
+	if not(query_time.tm_wday == posting_struct.tm_wday):
+		diff = (posting_struct.tm_wday - query_time.tm_wday) % 7
+
+		last_year = posting_struct.tm_year
 		try:								#Try just naively subtracting the time difference
-			my_time_struct = time.strptime(str(my_time_struct.tm_yday - diff) + " " + str(my_time_struct.tm_year), "%j %Y")
+			posting_struct = time.strptime(str(posting_struct.tm_yday - diff) + " " + str(last_year), "%j %Y")
 		except:
-			#This is still borked
-			#if we cross over a year it is gonna fail :(
-			#
-			print my_time_struct.tm_yday, diff, str(my_time_struct.tm_yday - diff)
-			my_time_struct = time.strptime(str(my_time_struct.tm_yday - diff) + " " + str(my_time_struct.tm_year - 1), "%j %Y")		
+			#If we roll over a year....
+			last_year = str(last_year - 1)
+			remainder = diff - posting_struct.tm_yday
+			last_year_days = time.strptime('12 31 ' + last_year,  "%m %d %Y")
+			posting_struct = time.strptime(str(last_year_days.tm_yday - remainder) + " " + last_year, "%j %Y")		
 			
-	display_time = time.strftime("%m/%d/%Y", my_time_struct)	#Format it back to MM/DD/YYYY
-	#print display_time
-	return display_time, my_time_struct
+	display_time = time.strftime("%m/%d/%Y", posting_struct)	#Format it back to MM/DD/YYYY
+
+	return display_time, posting_struct
 	
 	
 if __name__ == "__main__":
+	
+	reload(sys)
+	sys.setdefaultencoding('utf-8')
+	
 	dow, query, formatted_query, stop_date = handle_args()
-	#date = "July 2rd, 2013"
-	#display_date, date_struct = format_site_date(date, dow)
-	#exit(1)
+	
 	while (not flag):
-		response = urllib2.urlopen(base_url + str(page) + junk + formatted_query).read().decode('utf-8')
-		
+		print page
+		try:
+			response = urllib2.urlopen(base_url + str(page) + junk + formatted_query).read().decode('utf-8')
+		except:
+			#404 will throw an error for urllib2
+			flag = 1
+			break
+
 		#we're only interested in the #excerpt
 		my_regex = r'\<div class\=\"excerpt\"\>\s*\<a href="([^"]*)\"\s*title\=\"' + re.escape(query)
 		urls = re.findall(my_regex, response, re.I)
 		
 		for url in urls:
-			#print "opening " + url
+			print url
 			response = urllib2.urlopen(url).read().decode('utf-8')
 			
 			#first find the posting date, of the format STR_MONTH DATE{1,2}_STR, YEAR{4}
@@ -73,8 +89,8 @@ if __name__ == "__main__":
 			display_date, date_struct = format_site_date(date, dow)
 			
 			#Check we haven't passed our stop date
-			print date_struct, stop_date, date_struct < stop_date
 			if (date_struct < stop_date):
+				flag = 1
 				break
 			
 			#anything between <td> tags 
@@ -82,7 +98,7 @@ if __name__ == "__main__":
 			ratings = re.findall(my_regex, response, re.I)
 			
 			j = 0
-			k = 0					#We know there are 4 fiel-ds per tag
+			k = 0					#We know there are 4 fields per tag
 			output = ""
 			
 			for rating in ratings:
@@ -103,10 +119,5 @@ if __name__ == "__main__":
 				else:
 					j = j + 1
 			
-		#Just read 1st page for the moment
-		if (i == 0):
-			flag = 1
-			
-		i = i + 1
 		page = page + 1
 			
