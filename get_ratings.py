@@ -31,12 +31,12 @@ def handle_args():
 def format_site_date(my_time, day_of_week):
 	my_time = re.sub('([0-9]+)[a-zA-Z]+', '\\1', my_time)		#Strip any character after the date, ie July 1st => July 1
 	my_time_struct = time.strptime(my_time, "%B %d, %Y")		#Create a struct of the requisite files [tm_wday contains DOW, and tm_yday contains position in year]
-	query_time = time.strptime(day_of_week, "%A")			#Sunday is being parsed as 6th day of the week, specs say it should be 0....
+	query_time = time.strptime(day_of_week, "%A")				#Sunday is being parsed as 6th day of the week, specs say it should be 0....
 	if not(query_time.tm_wday == my_time_struct.tm_wday):
-		diff = ((my_time_struct.tm_wday +1) %7) - ((query_time.tm_wday +1) %7)
-		print diff
-		print query_time, query_time.tm_wday
-		print my_time_struct, my_time_struct.tm_wday
+		diff = (my_time_struct.tm_wday - query_time.tm_wday) % 7
+		#print diff
+		#print query_time, query_time.tm_wday
+		#print my_time_struct, my_time_struct.tm_wday
 		try:								#Try just naively subtracting the time difference
 			my_time_struct = time.strptime(str(my_time_struct.tm_yday - diff) + " " + str(my_time_struct.tm_year), "%j %Y")
 		except:
@@ -72,26 +72,31 @@ if __name__ == "__main__":
 			date = date.group(0)
 			display_date, date_struct = format_site_date(date, dow)
 			
+			#Check we haven't passed our stop date
+			print date_struct, stop_date, date_struct < stop_date
+			if (date_struct < stop_date):
+				break
+			
 			#anything between <td> tags 
 			my_regex = r'\<td[^\>]*\>(.*?)\<\/td\>'
 			ratings = re.findall(my_regex, response, re.I)
 			
 			j = 0
-			k = 1					#We know there are 4 fields per tag
+			k = 0					#We know there are 4 fiel-ds per tag
 			output = ""
 			
 			for rating in ratings:
-				#Basically, skip first four junk lines
+				#Basically, skip first four junk lines laying out the table headings
 				if not (j < 5):
 					#Now let's strip out all the remaining HTML tags and the stupid dashes...and replace &amp;....
 					rating = re.sub(r'\<[^\>]*\>', '', rating)
 					rating = re.sub(r'\-\s*L?', '', rating, re.I)
 					rating = re.sub(r'\&amp;', '&', rating)													#where is my CSC401 work?
 					output += rating + "\t"
-					if (k < 5):		#While we haven't completed a string, concantenate it
+					if (k < 4):		#While we haven't completed a string, concantenate it
 						k = k + 1
-					elif (k == 5):		#Else print it out and reset
-						k = 1
+					elif (k == 4):		#Else print it out and reset
+						k = 0
 						print display_date + "\t" + output
 						output = ""
 						
@@ -99,7 +104,7 @@ if __name__ == "__main__":
 					j = j + 1
 			
 		#Just read 1st page for the moment
-		if (i == 1):
+		if (i == 0):
 			flag = 1
 			
 		i = i + 1
