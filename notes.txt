@@ -1,11 +1,20 @@
+Bugs:
+$ python get_ratings.py Sunday 08/16/2012 > sunday_ratings_to_last_year &
+$ grep -i "game of thrones" sunday_ratings_to_last_year
+
+>> There's a bug on page 12, for some reason the date is being written as the previous week.  Then we end up with 2x 05/05/2013.
+
+
+
 Todo:
-	add command line args
+	x. add command line args
 		Handle all command line args
-		Format end_date
+	x.	Format end_date
 	check iff date is valid
-		and if query_date is valid.  Handle iff year rolls over
+		and if query_date is valid.  
+		x. Handle iff year rolls over
 	cycle through pagination
-		compare to end date
+		x. compare to end date
 	testing?
 
 python <day of week> <opt> <stop date>
@@ -34,3 +43,4 @@ Questions:
 	How to disambiguate search results?
 		title is "Nothing found..." after exceeding results.
 		So, we can just do while !found and & maybe look @ headers?
+		

@@ -67,7 +67,6 @@ if __name__ == "__main__":
 	dow, query, formatted_query, stop_date = handle_args()
 	
 	while (not flag):
-		print page
 		try:
 			response = urllib2.urlopen(base_url + str(page) + junk + formatted_query).read().decode('utf-8')
 		except:
@@ -80,7 +79,6 @@ if __name__ == "__main__":
 		urls = re.findall(my_regex, response, re.I)
 		
 		for url in urls:
-			print url
 			response = urllib2.urlopen(url).read().decode('utf-8')
 			
 			#first find the posting date, of the format STR_MONTH DATE{1,2}_STR, YEAR{4}
