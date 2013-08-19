@@ -7,7 +7,7 @@ import time
 #initial variables
 flag = 0
 base_url = "http://tvbythenumbers.zap2it.com/page/"
-page = 1
+page = 12
 junk = "/?s="
 
 #Handles the command line arguments and returns them in a useful format
@@ -79,11 +79,13 @@ if __name__ == "__main__":
 		urls = re.findall(my_regex, response, re.I)
 		
 		for url in urls:
+		
 			response = urllib2.urlopen(url).read().decode('utf-8')
 			
 			#first find the posting date, of the format STR_MONTH DATE{1,2}_STR, YEAR{4}
-			date = re.search(r'([^\s\>]* [0-9]{1,2}\w*, [0-9]{4})', response)
-			date = date.group(0)
+			date = re.search(r'\<p\>\s*([^\s\>]* [0-9]{1,2}\w*, [0-9]{4})\<', response)
+			date = date.group(1)
+			
 			display_date, date_struct = format_site_date(date, dow)
 			
 			#Check we haven't passed our stop date
