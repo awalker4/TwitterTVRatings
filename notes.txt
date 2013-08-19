@@ -19,4 +19,4 @@ AIR_DATE ... Show	Net	Time	Viewership (million, Live+SD)	Adults 18-49 rating (Li
 	
 Questions:
 	How far back can we go?
-		
+		not that far....

@@ -7,7 +7,7 @@ import time
 #initial variables
 flag = 0
 base_url = "http://tvbythenumbers.zap2it.com/page/"
-page = 12
+page = 1
 junk = "/?s="
 
 #Handles the command line arguments and returns them in a useful format
